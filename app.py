@@ -2,8 +2,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import pickle
-from tensorflow.keras.models import load_model
-model = load_model("laptop_price_model.keras")
+import joblib
+
+model = joblib.load("laptop_price_model.pkl")
 # ----------------------------------
 # Load model and metadata
 # ----------------------------------
