@@ -64,7 +64,6 @@ with col2:
 # ----------------------------------
 # Prediction
 # ----------------------------------
-
 if st.button("🔮 Predict Price"):
 
     input_data = {
@@ -82,25 +81,20 @@ if st.button("🔮 Predict Price"):
 
     input_df = pd.DataFrame([input_data])
 
-    # One-Hot Encoding
+    # One-hot encode
     encoded_df = pd.get_dummies(input_df)
 
-    # Align columns with training data
+    # Align columns with training dataset
     encoded_df = encoded_df.reindex(columns=model_columns, fill_value=0)
 
     try:
         prediction = model.predict(encoded_df)
-
-        # Some models return array, some nested
         price = prediction[0]
 
         st.success(f"💰 Estimated Laptop Price: ₹{int(price):,}")
 
     except Exception as e:
-        st.error("Prediction failed. Please check model compatibility.")
-
-    st.caption("⚠️ Prediction is based on historical data and may vary.")
-
+        st.error(f"Prediction failed: {e}")
 # ----------------------------------
 # Footer
 # ----------------------------------
