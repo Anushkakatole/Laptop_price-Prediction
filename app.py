@@ -5,19 +5,7 @@ import pickle
 import joblib
 
 # ----------------------------------
-# Load model and metadata
-# ----------------------------------
-
-model = joblib.load("laptop_price_model.pkl")
-
-with open("model_columns.pkl", "rb") as f:
-    model_columns = pickle.load(f)
-
-with open("dropdowns.pkl", "rb") as f:
-    dropdowns = pickle.load(f)
-
-# ----------------------------------
-# Streamlit UI
+# Page Configuration
 # ----------------------------------
 
 st.set_page_config(
@@ -26,12 +14,34 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("💻 Laptop Price Prediction")
-st.write("Enter laptop specifications to estimate its price.")
+# ----------------------------------
+# Load Model and Metadata
+# ----------------------------------
+
+@st.cache_resource
+def load_model():
+    return joblib.load("laptop_price_model.pkl")
+
+@st.cache_data
+def load_metadata():
+    with open("model_columns.pkl", "rb") as f:
+        model_columns = pickle.load(f)
+
+    with open("dropdowns.pkl", "rb") as f:
+        dropdowns = pickle.load(f)
+
+    return model_columns, dropdowns
+
+
+model = load_model()
+model_columns, dropdowns = load_metadata()
 
 # ----------------------------------
-# User Inputs
+# UI
 # ----------------------------------
+
+st.title("💻 Laptop Price Prediction")
+st.write("Enter laptop specifications to estimate its price.")
 
 st.subheader("🔧 Laptop Specifications")
 
@@ -52,7 +62,7 @@ with col2:
     weight = st.number_input("Weight (kg)", 0.5, 5.0, step=0.1)
 
 # ----------------------------------
-# Predict Button
+# Prediction
 # ----------------------------------
 
 if st.button("🔮 Predict Price"):
@@ -72,16 +82,22 @@ if st.button("🔮 Predict Price"):
 
     input_df = pd.DataFrame([input_data])
 
-    # One-hot encoding
+    # One-Hot Encoding
     encoded_df = pd.get_dummies(input_df)
 
-    # Align columns with training dataset
+    # Align columns with training data
     encoded_df = encoded_df.reindex(columns=model_columns, fill_value=0)
 
-    # Prediction
-    prediction = model.predict(encoded_df)[0]
+    try:
+        prediction = model.predict(encoded_df)
 
-    st.success(f"💰 Estimated Laptop Price: ₹{int(prediction):,}")
+        # Some models return array, some nested
+        price = prediction[0]
+
+        st.success(f"💰 Estimated Laptop Price: ₹{int(price):,}")
+
+    except Exception as e:
+        st.error("Prediction failed. Please check model compatibility.")
 
     st.caption("⚠️ Prediction is based on historical data and may vary.")
 
