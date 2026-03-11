@@ -4,9 +4,9 @@ import numpy as np
 import pickle
 import joblib
 
-# ----------------------------------
-# Page Configuration
-# ----------------------------------
+# -------------------------------
+# Page configuration
+# -------------------------------
 
 st.set_page_config(
     page_title="Laptop Price Predictor",
@@ -14,13 +14,16 @@ st.set_page_config(
     layout="centered"
 )
 
-# ----------------------------------
-# Load Model and Metadata
-# ----------------------------------
+# -------------------------------
+# Load model
+# -------------------------------
 
 @st.cache_resource
 def load_model():
-    return joblib.load("laptop_price_model.pkl")
+    BASE_DIR = os.path.dirname(__file__)
+    model_path = os.path.join(BASE_DIR, "laptop_price_model.pkl")
+    return joblib.load(model_path)
+
 
 @st.cache_data
 def load_metadata():
@@ -36,14 +39,14 @@ def load_metadata():
 model = load_model()
 model_columns, dropdowns = load_metadata()
 
-# ----------------------------------
+# -------------------------------
 # UI
-# ----------------------------------
+# -------------------------------
 
 st.title("💻 Laptop Price Prediction")
 st.write("Enter laptop specifications to estimate its price.")
 
-st.subheader("🔧 Laptop Specifications")
+st.subheader("Laptop Specifications")
 
 col1, col2 = st.columns(2)
 
@@ -61,10 +64,11 @@ with col2:
     hdd = st.number_input("HDD (GB)", 0, 2000, step=256)
     weight = st.number_input("Weight (kg)", 0.5, 5.0, step=0.1)
 
-# ----------------------------------
+# -------------------------------
 # Prediction
-# ----------------------------------
-if st.button("🔮 Predict Price"):
+# -------------------------------
+
+if st.button("Predict Price"):
 
     input_data = {
         "Company": company,
@@ -81,10 +85,10 @@ if st.button("🔮 Predict Price"):
 
     input_df = pd.DataFrame([input_data])
 
-    # One-hot encode
+    # One-hot encoding
     encoded_df = pd.get_dummies(input_df)
 
-    # Align columns with training dataset
+    # Align with training columns
     encoded_df = encoded_df.reindex(columns=model_columns, fill_value=0)
 
     try:
@@ -95,9 +99,10 @@ if st.button("🔮 Predict Price"):
 
     except Exception as e:
         st.error(f"Prediction failed: {e}")
-# ----------------------------------
+
+# -------------------------------
 # Footer
-# ----------------------------------
+# -------------------------------
 
 st.markdown("---")
 st.markdown("Built with ❤️ using Machine Learning")
