@@ -19,22 +19,20 @@ st.set_page_config(
 # ----------------------------------
 
 @st.cache_resource
-def load_model():
-    return joblib.load("scaler.pkl")
+def load_files():
+    model = joblib.load("laptop_price_model.pkl")
+    scaler = joblib.load("scaler.pkl")
 
-@st.cache_data
-def load_metadata():
     with open("model_columns.pkl", "rb") as f:
         model_columns = pickle.load(f)
 
     with open("dropdowns.pkl", "rb") as f:
         dropdowns = pickle.load(f)
 
-    return model_columns, dropdowns
+    return model, scaler, model_columns, dropdowns
 
 
-model = load_model()
-model_columns, dropdowns = load_metadata()
+model, scaler, model_columns, dropdowns = load_files()
 
 # ----------------------------------
 # UI
@@ -64,6 +62,7 @@ with col2:
 # ----------------------------------
 # Prediction
 # ----------------------------------
+
 if st.button("🔮 Predict Price"):
 
     input_data = {
@@ -81,20 +80,25 @@ if st.button("🔮 Predict Price"):
 
     input_df = pd.DataFrame([input_data])
 
-    # One-hot encode
+    # One-hot encoding
     encoded_df = pd.get_dummies(input_df)
 
-    # Align columns with training dataset
+    # Align columns
     encoded_df = encoded_df.reindex(columns=model_columns, fill_value=0)
 
     try:
-        prediction = model.predict(encoded_df)
+        # Scale features
+        scaled_input = scaler.transform(encoded_df)
+
+        # Predict
+        prediction = model.predict(scaled_input)
         price = prediction[0]
 
         st.success(f"💰 Estimated Laptop Price: ₹{int(price):,}")
 
     except Exception as e:
         st.error(f"Prediction failed: {e}")
+
 # ----------------------------------
 # Footer
 # ----------------------------------
