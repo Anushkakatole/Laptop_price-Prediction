@@ -2,12 +2,13 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import pickle
-from tensorflow.keras.models import load_model
-model = load_model("laptop_price_model.keras")
+import joblib
+
 # ----------------------------------
 # Load model and metadata
 # ----------------------------------
 
+model = joblib.load("laptop_price_model.pkl")
 
 with open("model_columns.pkl", "rb") as f:
     model_columns = pickle.load(f)
@@ -18,6 +19,7 @@ with open("dropdowns.pkl", "rb") as f:
 # ----------------------------------
 # Streamlit UI
 # ----------------------------------
+
 st.set_page_config(
     page_title="Laptop Price Predictor",
     page_icon="💻",
@@ -30,6 +32,7 @@ st.write("Enter laptop specifications to estimate its price.")
 # ----------------------------------
 # User Inputs
 # ----------------------------------
+
 st.subheader("🔧 Laptop Specifications")
 
 col1, col2 = st.columns(2)
@@ -51,8 +54,9 @@ with col2:
 # ----------------------------------
 # Predict Button
 # ----------------------------------
+
 if st.button("🔮 Predict Price"):
-    # Create single-row dataframe
+
     input_data = {
         "Company": company,
         "TypeName": type_name,
@@ -68,14 +72,14 @@ if st.button("🔮 Predict Price"):
 
     input_df = pd.DataFrame([input_data])
 
-    # One-hot encode
+    # One-hot encoding
     encoded_df = pd.get_dummies(input_df)
 
-    # Align columns with training data
+    # Align columns with training dataset
     encoded_df = encoded_df.reindex(columns=model_columns, fill_value=0)
 
     # Prediction
-    prediction = model.predict(encoded_df)[0][0]
+    prediction = model.predict(encoded_df)[0]
 
     st.success(f"💰 Estimated Laptop Price: ₹{int(prediction):,}")
 
@@ -84,5 +88,6 @@ if st.button("🔮 Predict Price"):
 # ----------------------------------
 # Footer
 # ----------------------------------
+
 st.markdown("---")
 st.markdown("Built with ❤️ using Machine Learning")
