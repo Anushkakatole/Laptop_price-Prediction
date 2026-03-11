@@ -20,7 +20,7 @@ st.set_page_config(
 
 @st.cache_resource
 def load_model():
-    return joblib.load("laptop_price_model.pkl")
+    return joblib.load("scaler.pkl")
 
 @st.cache_data
 def load_metadata():
