@@ -2,14 +2,13 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import tensorflow as tf
-import pickle
+import joblib
 
-# Load the trained model
-model = tf.keras.models.load_model('laptop_price_prediction_model.keras')
+model = joblib.load("laptop_price_model.pkl")
 
 # Load the scaler
 with open('scaler.pkl', 'rb') as file:
-    scaler = pickle.load(file)
+    scaler = joblib.load(file)
     
 
 # Define categorical features (as used during training)
